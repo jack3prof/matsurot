@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Al-Ma'thurat - Dzikir Pagi & Petang</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            850: '#064e3b',
+                            900: '#022c22',
+                        },
+                        gold: {
+                            400: '#facc15',
+                            500: '#eab308',
+                            600: '#ca8a04',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        arabic: ['Amiri', 'serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        .font-arabic {
+            font-family: 'Amiri', serif;
+        }
+
+        /* Glassmorphism Navigation */
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .dark .glass-nav {
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        /* Compact Header Mode */
+        .header-compact {
+            padding-top: 0.35rem !important;
+            padding-bottom: 0.35rem !important;
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Arabic Text Size Classes */
+        .arabic-size-sm { font-size: 1.35rem; line-height: 2.3rem; }
+        .arabic-size-md { font-size: 1.75rem; line-height: 2.8rem; }
+        .arabic-size-lg { font-size: 2.2rem; line-height: 3.4rem; }
+        .arabic-size-xl { font-size: 2.7rem; line-height: 4.0rem; }
+
+        /* Automatic Font Scaling in Mobile Landscape Mode */
+        @media (orientation: landscape) and (max-height: 600px) {
+            .arabic-size-sm { font-size: 1.65rem !important; line-height: 2.6rem !important; }
+            .arabic-size-md { font-size: 2.1rem !important; line-height: 3.2rem !important; }
+            .arabic-size-lg { font-size: 2.6rem !important; line-height: 3.8rem !important; }
+            .arabic-size-xl { font-size: 3.2rem !important; line-height: 4.6rem !important; }
+        }
+    </style>
+</head>
+<body class="bg-amber-50/40 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300 min-h-screen flex flex-col">
+
+    <!-- Modal Pilihan Pertama Kali (Kubro vs Sughro) -->
+    <div id="type-selection-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl text-center space-y-6">
+            <div>
+                <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold">
+                    <i class="fa-solid fa-book-quran"></i>
+                </div>
+                <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">Pilih Jenis Al-Ma'tsurot</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">klik yang ingin Anda baca</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button onclick="selectType('kubro')" class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-500 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-left transition group">
+                    <div class="font-bold text-emerald-800 dark:text-emerald-300 text-base mb-1 flex items-center justify-between">
+                        KUBRO
+                        <i class="fa-solid fa-circle-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                    </div>
+                    <p class="text-[11px] text-emerald-600 dark:text-emerald-400 leading-tight">Lengkap dengan seluruh ayat-ayat Al-Qur'an pilihan.</p>
+                </button>
+
+                <button onclick="selectType('sughro')" class="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-500 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-left transition group">
+                    <div class="font-bold text-amber-800 dark:text-amber-300 text-base mb-1 flex items-center justify-between">
+                        SUGHRO
+                        <i class="fa-solid fa-circle-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                    </div>
+                    <p class="text-[11px] text-amber-600 dark:text-amber-400 leading-tight">Ringkas, menyembunyikan beberapa surah/ayat.</p>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reading Progress Bar -->
+    <div class="fixed top-0 left-0 w-full h-1 bg-slate-200 dark:bg-slate-800 z-50">
+        <div id="progress-bar" class="h-full bg-gradient-to-r from-emerald-600 via-teal-500 to-amber-500 w-0 transition-all duration-150"></div>
+    </div>
+
+    <!-- Sticky & Shrinking Header -->
+    <header id="main-header" class="sticky top-0 z-40 glass-nav border-b border-emerald-900/10 dark:border-emerald-500/10 transition-all duration-300 shadow-sm">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-2 transition-all duration-300" id="header-container">
+            
+            <!-- Full Mode Left Section -->
+            <div id="header-full-left" class="flex items-center space-x-3 transition-all duration-300">
+                <button id="menu-btn" onclick="openDrawer()" class="p-2 rounded-xl text-emerald-800 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-slate-800 transition" title="Daftar Isi">
+                    <i class="fa-solid fa-bars-staggered text-lg"></i>
+                </button>
+                <div class="flex flex-col">
+                    <h1 class="font-bold text-lg md:text-xl text-emerald-900 dark:text-emerald-300 tracking-tight leading-none">
+                        Al-Ma'thurat
+                    </h1>
+                    <span id="sub-mode-badge" class="text-[11px] font-medium text-amber-600 dark:text-amber-400 mt-0.5">Kubro • Otomatis</span>
+                </div>
+            </div>
+
+            <!-- Full Mode Right Section -->
+            <div id="header-full-right" class="flex items-center gap-1.5 sm:gap-2 transition-all duration-300">
+                <!-- Morning/Evening Switcher -->
+                <div class="bg-emerald-100 dark:bg-slate-800 p-1 rounded-xl flex items-center border border-emerald-200 dark:border-slate-700">
+                    <button id="btn-pagi" onclick="setMode('pagi')" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1">
+                        <i class="fa-solid fa-sun text-amber-400"></i>
+                        <span class="inline">Pagi</span>
+                    </button>
+                    <button id="btn-petang" onclick="setMode('petang')" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1">
+                        <i class="fa-solid fa-moon text-indigo-400"></i>
+                        <span class="inline">Petang</span>
+                    </button>
+                </div>
+
+                <!-- Font Resizer -->
+                <div class="hidden xs:flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
+                    <button onclick="changeFontSize(-1)" class="w-7 h-7 flex items-center justify-center text-xs font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="Kecilkan Font">
+                        A-
+                    </button>
+                    <button onclick="changeFontSize(1)" class="w-7 h-7 flex items-center justify-center text-xs font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="Besarkan Font">
+                        A+
+                    </button>
+                </div>
+
+                <!-- Dark Mode Toggle -->
+                <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-amber-500 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition">
+                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+
+            <!-- Compact Scroll Floating Bar Mode -->
+            <div id="header-compact-bar" class="hidden w-full items-center justify-between py-0.5">
+                <div class="flex items-center gap-2">
+                    <span id="compact-status-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-700 text-white flex items-center gap-1.5 shadow-sm">
+                    </span>
+                    <span id="compact-title-badge" class="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[150px] sm:max-w-none">Al-Ma'thurat Kubro</span>
+                </div>
+                
+                <div class="flex items-center gap-1">
+                    <button onclick="openDrawer()" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="Daftar Isi">
+                        <i class="fa-solid fa-list-ol text-xs"></i>
+                    </button>
+                    <button onclick="openMenuModal()" class="w-9 h-8 flex items-center justify-center rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-md transition-transform active:scale-95" title="Menu Utama & Pengaturan">
+                        <i class="fa-solid fa-ellipsis-h text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Menu Control Modal -->
+    <div id="menu-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
+        <div id="menu-modal-content" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 w-full max-w-sm shadow-2xl transition-all scale-95 transform">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-4">
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-emerald-600"></i> Pengaturan & Kontrol
+                </h3>
+                <button onclick="closeMenuModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-1.5">Jenis Bacaan</label>
+                    <div class="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                        <button id="modal-btn-kubro" onclick="setType('kubro'); closeMenuModal();" class="py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition">
+                            Kubro
+                        </button>
+                        <button id="modal-btn-sughro" onclick="setType('sughro'); closeMenuModal();" class="py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition">
+                            Sughro
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-1.5">Waktu Dzikir</label>
+                    <div class="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                        <button id="modal-btn-pagi" onclick="setMode('pagi'); closeMenuModal();" class="py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition">
+                            <i class="fa-solid fa-sun text-amber-400"></i> Mode Pagi
+                        </button>
+                        <button id="modal-btn-petang" onclick="setMode('petang'); closeMenuModal();" class="py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition">
+                            <i class="fa-solid fa-moon text-indigo-400"></i> Mode Petang
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-1.5">Ukuran Tulisan Arab</label>
+                    <div class="flex items-center justify-between bg-slate-100 dark:bg-slate-800 p-2 rounded-2xl border border-slate-200 dark:border-slate-700">
+                        <button onclick="changeFontSize(-1)" class="w-10 h-10 rounded-xl bg-white dark:bg-slate-700 font-bold text-slate-700 dark:text-slate-200 shadow-sm flex items-center justify-center hover:bg-slate-50">
+                            A-
+                        </button>
+                        <span id="font-size-label" class="text-xs font-semibold text-emerald-700 dark:text-emerald-400">Sedang</span>
+                        <button onclick="changeFontSize(1)" class="w-10 h-10 rounded-xl bg-white dark:bg-slate-700 font-bold text-slate-700 dark:text-slate-200 shadow-sm flex items-center justify-center hover:bg-slate-50">
+                            A+
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button onclick="toggleTheme()" class="py-2.5 px-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700">
+                        <i id="modal-theme-icon" class="fa-solid fa-moon text-amber-500"></i> Mode Tampilan
+                    </button>
+                    <button onclick="closeMenuModal(); openDrawer();" class="py-2.5 px-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 text-xs font-semibold flex items-center justify-center gap-2 border border-emerald-200 dark:border-emerald-800">
+                        <i class="fa-solid fa-list-ol"></i> Daftar Dzikir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Drawer Sidebar -->
+    <div id="drawer-overlay" onclick="closeDrawer()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 opacity-0 pointer-events-none transition-all duration-300"></div>
+    <aside id="drawer" class="fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white dark:bg-slate-900 z-50 shadow-2xl -translate-x-full transition-transform duration-300 flex flex-col border-r border-slate-200 dark:border-slate-800">
+        <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-emerald-800 text-white">
+            <div>
+                <h2 class="font-bold text-base">Daftar Isi Dzikir</h2>
+                <p id="drawer-subtitle" class="text-[11px] text-emerald-200">Al-Ma'thurat Kubro Lengkap</p>
+            </div>
+            <button onclick="closeDrawer()" class="w-8 h-8 rounded-full bg-emerald-700 text-emerald-100 flex items-center justify-center hover:bg-emerald-600 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div id="drawer-items" class="flex-1 overflow-y-auto p-3 space-y-1">
+        </div>
+    </aside>
+
+    <!-- Landscape Hint Banner -->
+    <div class="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-amber-500/10 border-b border-amber-500/20 py-1.5 px-4 text-center text-xs text-amber-800 dark:text-amber-300 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-mobile-screen-button rotate-90 text-sm animate-pulse"></i>
+        <span><strong>Tips:</strong> Putar HP ke posisi <strong>Lanskap (Miring)</strong> untuk tampilan tulisan Arab yang lebih besar secara otomatis!</span>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-4xl w-full mx-auto px-3 sm:px-6 py-6">
+        <div id="dzikir-container" class="space-y-6">
+        </div>
+    </main>
+
+    <footer class="mt-12 py-8 bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
+        <div class="max-w-4xl mx-auto px-4 space-y-2">
+            <p id="footer-title" class="font-semibold text-emerald-700 dark:text-emerald-400">Al-Ma'thurat Kubro - Dzikir Pagi & Petang</p>
+            <p>Profesional Beriman</p>
+        </div>
+    </footer>
+
+    <script>
+        const dzikirData = [
+            {
+                id: "taawwudz",
+                title: "Ta'awwudz & Surah Al-Fatihah",
+                subtitle: "Pembuka Dzikir",
+                arabic: "أَعُوذُ بِاللهِ السَّمِيعِ الْعَلِيمِ مِنَ الشَّيْطَانِ الرَّجِيمِ\n\nبِسْمِ اللهِ الرَّحْمَنِ الرَّحِيمِ (١) الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ (٢) الرَّحْمَنِ الرَّحِيمِ (٣) مَالِكِ يَوْمِ الدِّينِ (٤) إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ (٥) اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ (٦) صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ (٧)",
+                count: 1,
+                kubroOnly: false
+            },
+            {
+                id: "baqarah-1-5",
+                title: "Surah Al-Baqarah: 1-5",
+                subtitle: "Petunjuk Bagi Orang Bertakwa",
+                arabic: "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ\n\nالَمَ (١) ذَلِكَ الْكِتَابُ لَا رَيْبَ فِيهِ هُدًى لِلْمُتَّقِينَ (٢) الَّذِينَ يُؤْمِنُونَ بِالْغَيْبِ وَيُقِيمُونَ الصَّلَاةَ وَمِمَّا رَزَقْنَاهُمْ يُنفِقُونَ (٣) وَالَّذِينَ يُؤْمِنُونَ بِمَا أُنزِلَ إِلَيْكَ وَمَا أُنزِلَ مِن قَبْلِكَ وَبِالْآخِرَةِ هُمْ يُوقِنُونَ (٤) أُوْلَٰئِكَ عَلَىٰ هُدًى مِّن رَّبِّهِمْ وَأُوْلَٰئِكَ هُمُ الْمُفْلِحُونَ (٥)",
+                count: 1,
+                kubroOnly: false
+            },
+            {
+                id: "ayat-kursi",
+                title: "Ayat Kursi (Al-Baqarah: 255-257)",
+                subtitle: "Keagungan Allah & Pelindung",
+                arabic: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ وَلَا يَئُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ\n\nلَا إِكْرَاهَ فِي الدِّينِ قَد تَّبَيَّنَ الرُّشْدُ مِنَ الْغَيِّ فَمَن يَكْفُرْ بِالطَّاغُوتِ وَيُؤْمِن بِاللَّهِ فَقَدِ اسْتَمْسَكَ بِالْعُرْوَةِ الْوُثْقَىٰ لَا انفِصَامَ لَهَا وَاللَّهُ سَمِيعٌ عَلِيمٌ\n\nاللَّهُ وَلِيُّ الَّذِينَ آمَنُوا يُخْرِجُهُم مِّنَ الظُّلُمَاتِ إِلَى النُّورِ وَالَّذِينَ كَفَرُوا أَوْلِيَاؤُهُمُ الطَّاغُوتُ يُخْرِجُونَهُم مِّنَ النُّورِ إِلَى الظُّلُمَاتِ أُولَٰئِكَ أَصْحَابُ النَّارِ هُمْ فِيهَا خَالِدُونَ",
+                count: 1,
+                kubroOnly: false
+            },
+            {
+                id: "baqarah-284-286",
+                title: "Surah Al-Baqarah: 284-286",
+                subtitle: "Penutup Al-Baqarah",
+                arabic: "لِلَّهِ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ وَإِن تُبْدُوا مَا فِي أَنفُسِكُمْ أَوْ تُخْفُوهُ يُحَاسِبْكُم بِهِ اللَّهُ فَيَغْفِرُ لِمَن يَشَاءُ وَيُعَذِّبُ مَن يَشَاءُ وَاللَّهُ عَلَى كُلِّ شَيْءٍ قَدِيرٌ\n\nآمَنَ الرَّسُولُ بِمَا أُنزِلَ إِلَيْهِ مِن رَّبِّهِ وَالْمُؤْمِنُونَ كُلٌّ آمَنَ بِاللَّهِ وَمَلَائِكَتِهِ وَكُتُبِهِ وَرُسُلِهِ لَا نُفَرِّقُ بَيْنَ أَحَدٍ مِّن رَّبِّهِ وَقَالُوا سَمِعْنَا وَأَطَعْنَا غُفْرَانَكَ رَبَّنَا وَإِلَيْكَ الْمَصِيرُ\n\nلَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا لَهَا مَا كَسَبَتْ وَعَلَيْهَا مَا اکْتَسَبَتْ رَبَّنَا لَا تُؤَاخِذْنَا إِن نَّسِينَا أَوْ أَخْطَأْنَا رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِن قَبْلِنَا رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنَا بِهِ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا أَنتَ مَوْلَانَا فَانصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ",
+                count: 1,
+                kubroOnly: false
+            },
+            {
+                id: "ali-imran",
+                title: "Surah Ali 'Imran: 1-2",
+                subtitle: "Kekuasaan Allah",
+                arabic: "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ\n\nالم (١) اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ (٢)",
+                count: 1,
+                kubroOnly: true
+            },
+            {
+                id: "taha",
+                title: "Surah Taha: 111-112",
+                subtitle: "Tunduk Kepada Yang Maha Hidup",
+                arabic: "وَعَنَتِ الْوُجُوهُ لِلْحَيِّ الْقَيُّومِ وَقَدْ خَابَ مَنْ حَمَلَ ظُلْمًا (١١١) وَمَن يَعْمَلْ مِنَ الصَّالِحَاتِ وَهُوَ مُؤْمِنٌ فَلَا يَخَافُ ظُلْمًا وَلَا هَضْمًا (١١٢)",
+                count: 1,
+                kubroOnly: true
+            },
+            {
+                id: "at-tawbah",
+                title: "Surah At-Tawbah: 129",
+                subtitle: "Cukup Allah Bagi Hamba-Nya (Dibaca 7x)",
+                arabic: "حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ",
+                count: 7,
+                kubroOnly: false
+            },
+            {
+                id: "al-isra",
+                title: "Surah Al-Isra: 110-111",
+                subtitle: "Seruan Asmaul Husna & Pujian Kepada Allah",
+                arabic: "قُلِ ادْعُوا اللَّهَ أَوِ ادْعُوا الرَّحْمَنَ أَيًّا مَّا تَدْعُوا فَلَهُ الْأَسْمَاءُ الْحُسْنَىٰ وَلَا تَجْهَرُ بِصَلَاتِكَ وَلَا تُخَافِتْ بِهَا وَابْتَغِ بَيْنَ ذَلِكَ سَبِيلًا (١١٠) وَقُلِ الْحَمْدُ لِلَّهِ الَّذِي لَمْ يَتَّخِذْ وَلَدًا وَلَمْ يَكُن لَّهُ شَرِيكٌ فِي الْمُلْكِ وَلَمْ يَكُن لَّهُ وَلِيٌّ مِّنَ الذُّلِّ وَكَبِّرْهُ تَكْبِيرًا (١١١)",
+                count: 1,
+                kubroOnly: true
+            },
+            {
+                id: "muminun",
+                title: "Surah Al-Mu'minun: 115-118",
+                subtitle: "Penciptaan Manusia & Pengampunan",
+                arabic: "أَفَحَسِبْتُمْ أَنَّمَا خَلَقْنَاكُمْ عَبَثًا وَأَنَّكُمْ إِلَيْنَا لَا تُرْجَعُونَ (١١٥) فَتَعَالَى اللَّهُ الْمَلِكُ الْحَقُّ لَا إِلَٰهَ إِلَّا هُوَ رَبُّ الْعَرْشِ الْكَرِيمِ (١١٦) وَمَن يَدْعُ مَعَ اللَّهِ إِلَٰهًا آخَرَ لَا بُرْهَانَ لَهُ بِهِ فَإِنَّمَا حِسَابُهُ عِندَ رَبِّهِ إِنَّهُ لَا يُفْلِحُ الْكَافِرُونَ (١١٧) وَقُل رَّبِّ اغْفِرْ وَارْحَمْ وَأَنتَ خَيْرُ الرَّاحِمِينَ (١١٨)",
+                count: 1,
+                kubroOnly: true
+            },
+            {
+                id: "rum",
+                title: "Surah Ar-Rum: 17-26",
+                subtitle: "Ayat-Ayat Keagungan Penciptaan",
+                arabic: "فَسُبْحَانَ اللَّهِ حِينَ تُمْسُونَ وَحِينَ تُصْبِحُونَ (١٧) وَلَهُ الْحَمْدُ فِي السَّمَاوَاتِ وَالْأَرْضِ وَعَشِيًّا وَحِينَ تُظْهِرُونَ (١٨) يُخْرِجُ الْحَيَّ مِنَ الْمَيِّتِ وَيُخْرِجُ الْمَيِّتَ مِنَ الْحَيِّ وَيُحْيِي الْأَرْضَ بَعْدَ مَوْتِهَا وَكَذَلِكَ تُخْرَجُونَ (١٩)\n\nوَمِنْ آيَاتِهِ أَنْ خَلَقَكُم مِّن تُرَابٍ ثُمَّ إِذَا أَنتُم بَشَرٌ تَنتَشِرُونَ (٢٠) وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً إِنَّ فِي ذَلِكَ لَآيَاتٍ لِّقَوْمٍ يَتَفَكَّرُونَ (٢١) وَمِنْ آيَاتِهِ خَلْقُ السَّمَاوَاتِ وَالْأَرْضِ وَاخْتِلَافُ أَلْسِنَتِكُمْ وَأَلْوَانِكُمْ إِنَّ فِي ذَلِكَ لَآيَاتٍ لِّلْعَالِمِينَ (٢٢) وَمِنْ آيَاتِهِ مَنَامُكُم بِاللَّيْلِ وَالنَّهَارِ وَابْتِغَاؤُكُم مِّن فَضْلِهِ إِنَّ فِي ذَلِكَ لَآيَاتٍ لِّقَوْمٍ يَسْمَعُونَ (٢٣) وَمِنْ آيَاتِهِ يُرِيكُمُ الْبَرْقَ خَوْفًا وَطَمَعًا وَيُنَزِّلُ مِنَ السَّماءِ مَاءً فَيُحْيِي بِهِ الْأَرْضَ بَعْدَ مَوْتِهَا إِنَّ فِي ذَلِكَ لَآيَاتٍ لِّقَوْمٍ يَعْقِلُونَ (٢٤) وَمِنْ آيَاتِهِ أَن تَقُومَ السَّمَاءُ وَالْأَرْضُ بِأَمْرِهِ ثُمَّ إِذَا دَعَاكُمْ دَعْوَةً مِّنَ الْأَرْضِ إِذَا أَنتُمْ تَخْرُجُونَ (٢٥) وَلَهُ مَن فِي السَّمَاوَاتِ وَالْأَرْضِ كُلٌّ لَّهُ قَانِتُونَ (٢٦)",
+                count: 1,
+                kubroOnly: true
+            },
+            {
+                id: "ghafir",
+                title: "Surah Ghafir: 1-3",
+                subtitle: "Pengampunan & Anugerah Allah",
+                arabic: "حم (١) تَنزِيلُ الْكِتَابِ مِنَ اللَّهِ الْعَزِيزِ الْعَلِيمِ (٢) غَافِرِ الذَّنْبِ وَقَابِلِ التَّوْبِ شَدِيدِ الْعِقَابِ ذِي الطَّوْلِ لَا إِلَٰهَ إِلَّا هُوَ إِلَيْهِ الْمَصِيرُ (٣)",
+                count: 1,
+                kubroOnly: true
+            },
+            {
+                id: "hashr",
+                title: "Surah Al-Hashr: 22-24",
+                subtitle: "Asmaul Husna",
+                arabic: "هُوَ اللَّهُ الَّذِي لَا إِلَٰهَ إِلَّا هُوَ عَالِمُ الْغَيْبِ وَالشَّهَادَةِ هُوَ الرَّحْمَنُ الرَّحِيمُ (٢٢) هُوَ اللَّهُ الَّذِي لَا إِلَٰهَ إِلَّا هُوَ الْمَلِكُ الْقُدُّوسُ السَّلَامُ الْمُؤْمِنُ الْمُهَيْمِنُ الْعَزِيزُ الْجَبَّارُ الْمُتَكَبِّرُ سُبْحَانَ اللَّهِ عَمَّا يُشْرِكُونَ (٢٣) هُوَ اللَّهُ الْخَالِقُ الْبَارِئُ الْمُصَوِّرُ لَهُ الْأَسْمَاءُ الْحُسْنَىٰ يُسَبِّحُ لَهُ مَا فِي السَّمَاوَاتِ وَالْأَرْضِ وَهُوَ الْعَزِيزُ الْحَكِيمُ (٢٤)",
+                count: 1,
+                kubroOnly: true
+            },
+            {
+                id: "zalzalah",
+                title: "Surah Az-Zalzalah",
+                subtitle: "Guncangan Hari Kiamat",
+                arabic: "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ\n\nإِذَا زُلْزِلَتِ الْأَرْضُ زِلْزَالَهَا (١) وَأَخْرَجَتِ الْأَرْضُ أَثْقَالَهَا (٢) وَقَالَ الْإِنسَانُ مَا لَهَا (٣) يَوْمَئِذٍ تُحَدِّثُ أَخْبَارَهَا (٤) بِأَنَّ رَبَّكَ أَوْحَىٰ لَهَا (٥) يَوْمَئِذٍ يَصْدُرُ النَّاسُ أَشْتَاتًا لِّيُرَوْا أَعْمَالَهُمْ (٦) فَمَن يَعْمَلْ مِثْقَالَ ذَرَّةٍ خَيْرًا يَرَهُ (٧) وَمَن يَعْمَلْ مِثْقَالَ ذَرَّةٍ شَرًّا يَرَهُ (٨)",
+                count: 1,
+                kubroOnly: true
+            },
+            {
+                id: "kafirun",
+                title: "Surah Al-Kafirun",
+                subtitle: "Pemurnian Aqidah",
+                arabic: "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ\n\nقُلْ يَا أَيُّهَا الْكَافِرُونَ (١) لَا أَعْبُدُ مَا تَعْبُدُونَ (٢) وَلَا أَنتُمْ عَابِدُونَ مَا أَعْبُدُ (٣) وَلَا أَنَا عَابِدٌ مَّا عَبَدتُّمْ (٤) وَلَا أَنتُمْ عَابِدُونَ مَا أَعْبُدُ (٥) لَكُمْ دِينُكُمْ وَلِيَ دِينِ (٦)",
+                count: 1,
+                kubroOnly: true
+            },
+            {
+                id: "nasr",
+                title: "Surah An-Nasr",
+                subtitle: "Pertolongan & Kemenangan Allah",
+                arabic: "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ\n\nإِذَا جَاءَ نَصْرُ اللَّهِ وَالْفَتْحُ (١) وَرَأَيْتَ النَّاسَ يَدْخُلُونَ فِي دِينِ اللَّهِ أَفْوَاجًا (٢) فَسَبِّحْ بِحَمْدِ رَبِّكَ وَاسْتَغْفِرْهُ إِنَّهُ كَانَ تَوَّابًا (٣)",
+                count: 1,
+                kubroOnly: true
+            },
+            {
+                id: "ikhlas",
+                title: "Surah Al-Ikhlas",
+                subtitle: "Ketauhidan (Dibaca 3x)",
+                arabic: "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ\n\nقُلْ هُوَ اللَّهُ أَحَدٌ (١) اللَّهُ الصَّمَدُ (٢) لَمْ يَلِدْ وَلَمْ يُولَدْ (٣) وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ (٤)",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "falaq",
+                title: "Surah Al-Falaq",
+                subtitle: "Perlindungan Dari Kejahatan Makhluk (Dibaca 3x)",
+                arabic: "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ\n\nقُلْ أَعُوذُ بِرَبِّ الْفَلَقِ (١) مِن شَرِّ مَا خَلَقَ (٢) وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ (٣) وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ (٤) وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ (٥)",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "nas",
+                title: "Surah An-Nas",
+                subtitle: "Perlindungan Dari Bisikan Setan (Dibaca 3x)",
+                arabic: "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ\n\nقُلْ أَعُوذُ بِرَبِّ النَّاسِ (١) مَلِكِ النَّاسِ (٢) إِلَٰهِ النَّاسِ (٣) مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ (٤) الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ (٥) مِنَ الْجِنَّةِ وَالنَّاسِ (٦)",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "asbahna-amsayna-1",
+                title: "Dzikir Memasuki Waktu (Bagian 1)",
+                subtitle: "Pengakuan Kerajaan Bagi Allah (Dibaca 3x)",
+                dynamicType: "asbahna1",
+                arabicPagi: "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ وَالْحَمْدُ لِلَّهِ لا شَرِيكَ لَهُ لَا إِلَهَ إِلَّا هُوَ وَإِلَيْهِ النُّشُورُ",
+                arabicPetang: "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ وَالْحَمْدُ لِلَّهِ لا شَرِيكَ لَهُ لَا إِلَهَ إِلَّا هُوَ وَإِلَيْهِ الْمَصِيرُ",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "asbahna-amsayna-2",
+                title: "Dzikir Memasuki Waktu (Bagian 2)",
+                subtitle: "Keteguhan Fitrah Islam & Agama Nabi (Dibaca 3x)",
+                dynamicType: "asbahna2",
+                arabicPagi: "أَصْبَحْنَا عَلَى فِطْرَةِ الْإِسْلَامِ وَعَلَى كَلِمَةِ الإِخْلاَصِ وَعَلَى دِيْنِ نَبِيِّنَا مُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ وَعَلَى مِلَّةِ أَبِيْنَا إِبْرَاهِيمَ حَنِيفًا مُسْلِمًا وَمَا كَانَ مِنَ الْمُشْرِكِينَ",
+                arabicPetang: "أَمْسَيْنَا عَلَى فِطْرَةِ الْإِسْلَامِ وَعَلَى كَلِمَةِ الإِخْلاَصِ وَعَلَى دِيْنِ نَبِيِّنَا مُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ وَعَلَى مِلَّةِ أَبِيْنَا إِبْرَاهِيمَ حَنِيفًا مُسْلِمًا وَمَا كَانَ مِنَ الْمُشْرِكِينَ",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "doa-nikmat-1",
+                title: "Doa Syukur Ni'mat (Bagian 1)",
+                subtitle: "Kesempurnaan Nikmat Pagi/Petang (Dibaca 3x)",
+                dynamicType: "nikmat1",
+                arabicPagi: "اللَّهُمَّ إِنِّي أَصْبَحْتُ مِنْكَ فِي نِعْمَةٍ وَعَافِيَةٍ وَسِتْرٍ فَأَتِمَّ عَلَيَّ نِعْمَتَكَ وَعَافِيَتَكَ وَسِتْرَكَ فِي الدُّنْيَا وَالْآخِرَةِ",
+                arabicPetang: "اللَّهُمَّ إِنِّي أَمْسَيْتُ مِنْكَ فِي نِعْمَةٍ وَعَافِيَةٍ وَسِتْرٍ فَأَتِمَّ عَلَيَّ نِعْمَتَكَ وَعَافِيَتَكَ وَسِتْرَكَ فِي الدُّنْيَا وَالْآخِرَةِ",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "doa-nikmat-2",
+                title: "Doa Syukur Ni'mat (Bagian 2)",
+                subtitle: "Pengakuan Atas Segala Nikmat Allah (Dibaca 3x)",
+                dynamicType: "nikmat2",
+                arabicPagi: "اللَّهُمَّ مَا أَصْبَحَ بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ لا شَرِيكَ لَكَ فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ",
+                arabicPetang: "اللَّهُمَّ مَا أَمْسَى بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ لا شَرِيكَ لَكَ فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "pujian-kelayakan",
+                title: "Pujian Keagungan Allah",
+                subtitle: "Kelayakan Pujian Bagi Kemuliaan Allah (Dibaca 3x)",
+                arabic: "يَا رَبِّي لَكَ الْحَمْدُ كَمَا يَنْبَغِي لِجَلَالِ وَجْهِكَ وَلِعَظِيمِ سُلْطَانِكَ",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "keridhaan-iman",
+                title: "Pengakuan Keridhaan Iman",
+                subtitle: "Ridha Kepada Allah, Islam, & Rasulullah (Dibaca 3x)",
+                arabic: "رَضِيتُ بِاللَّهِ رَبًّا وَبِالْإِسْلَامِ دِينًا وَبِمُحَمَّدٍ نَبِيًّا وَرَسُولًا",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "tasbih-keagungan",
+                title: "Tasbih Keagungan Makhluk",
+                subtitle: "Pujian Sebanyak Makhluk & Timbangan 'Arsy (Dibaca 3x)",
+                arabic: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ عَدَدَ خَلْقِهِ وَرِضَا نَفْسِهِ وَزِنَةَ عَرْشِهِ وَمِدَادَ كَلِمَاتِهِ",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "perlindungan-nama-allah",
+                title: "Perlindungan Dengan Nama Allah",
+                subtitle: "Pencegah Bahaya di Bumi & Langit (Dibaca 3x)",
+                arabic: "بِسْمِ اللهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّماءِ وَهُوَ السَّمِيعُ الْعَلِيمُ",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "perlindungan-syirik",
+                title: "Doa Memohon Perlindungan Syirik",
+                subtitle: "Pencegah Kesyirikan Nyata & Tersembunyi (Dibaca 3x)",
+                arabic: "اللَّهُمَّ إِنَّا نَعُوذُ بِكَ مِنْ أَنْ نُشْرِكَ بِكَ شَيْئًا نَعْلَمُهُ وَنَسْتَغْفِرُكَ لِمَا لَا نَعْلَمُهُ",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "perlindungan-kalimat-allah",
+                title: "Perlindungan Kalimat Allah",
+                subtitle: "Perlindungan Dari Kejahatan Makhluk (Dibaca 3x)",
+                arabic: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "doa-duka-utang",
+                title: "Doa Duka, Malas & Utang",
+                subtitle: "Perlindungan Kesusahan & Tekanan Utang (Dibaca 3x)",
+                arabic: "اللَّهُمَّ إِنِّي أَعُوْذُ بِكَ مِنَ الهَمِّ وَالْحَزَنِ وَأَعُوْذُ بِكَ مِنَ الْعَجْزِ وَالْكَسَلِ وَأَعُوْذُ بِكَ مِنَ الْجُبْنِ وَالبُخْلِ وَأَعُوْذُ بِكَ مِنْ غَلَبَةِ الدَّيْنِ وَقَهْرِ الرِّجَالِ",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "doa-kesehatan-jasmani",
+                title: "Doa Kesehatan Jasmani",
+                subtitle: "Keselamatan Badan, Pendengaran & Penglihatan (Dibaca 3x)",
+                arabic: "اللَّهُمَّ عَافِنِي فِي بَدَنِي اللَّهُمَّ عَافِنِي فِي سَمْعِي اللَّهُمَّ عَافِنِي فِي بَصَرِي",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "doa-kufur-fakir-azab",
+                title: "Doa Perlindungan Kufur & Azab Kubur",
+                subtitle: "Perlindungan Fakir, Kufur & Azab Kubur (Dibaca 3x)",
+                arabic: "اللَّهُمَّ إِنِّي أَعُوْذُ بِكَ مِنَ الْكُفْرِ وَالْفَقْرِ وَأَعُوْذُ بِكَ مِنْ عَذَابِ الْقَبْرِ لَا إِلَهَ إِلَّا أَنْتَ",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "sayyidul-istighfar",
+                title: "Sayyidul Istighfar",
+                subtitle: "Rajanya Istighfar & Pengakuan Dosa (Dibaca 1x)",
+                arabic: "اَللّهُمَّ أَنْتَ رَبِّي لَا إلهَ إِلا أَنْتَ خَلَقْتَنِي وَأَنَا عَبْدُكَ وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ أَعُوْذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ أَبُوْءُ لَكَ بِنِعْمَتِكَ عَلَيَّ وَأَبُوْءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
+                count: 1,
+                kubroOnly: false
+            },
+            {
+                id: "istighfar-al-azhim",
+                title: "Istighfar Al-Azhim",
+                subtitle: "Memohon Ampunan Kepada Allah Yang Maha Hidup (Dibaca 3x)",
+                arabic: "أَسْتَغْفِرُ اللهَ الْعَظِيمَ الَّذِي لَا إِلَهَ إِلَّا هُوَ الْحَيَّ الْقَيُّومَ وَأَتُوبُ إِلَيْهِ",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "sholawat-ibrahimiyyah",
+                title: "Sholawat Ibrahimiyyah",
+                subtitle: "Keutamaan Rahmat Kepada Nabi (Dibaca 10x)",
+                arabic: "اللَّهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ وَعَلَى آلِ سَيِّدِنَا مُحَمَّدٍ كَمَا صَلَّيْتَ عَلَى سَيِّدِنَا إِبْرَاهِيمَ وَعَلَى آلِ سَيِّدِنَا إِبْرَاهِيمَ وَبَارِكْ عَلَى سَيِّدِنَا مُحَمَّدٍ وَعَلَى آلِ سَيِّدِنَا مُحَمَّدٍ كَمَا بَارَكْتَ عَلَى سَيِّدِنَا إِبْرَاهِيمَ وَعَلَى آلِ سَيِّدِنَا إِبْرَاهِيمَ فِي الْعَالَمِينَ إِنَّكَ حَمِيدٌ مَجِيدٌ",
+                count: 10,
+                kubroOnly: false
+            },
+            {
+                id: "kalimat-thayyibah",
+                title: "Kalimat Thayyibah",
+                subtitle: "Tasbih, Tahmid, Tahlil, & Takbir (Dibaca 100x)",
+                arabic: "سُبْحَانَ اللَّهِ وَالْحَمْدُ لِلَّهِ وَلَا إِلَهَ إِلَّا اللَّهُ وَاللَّهُ أَكْبَرُ",
+                count: 100,
+                kubroOnly: false
+            },
+            {
+                id: "tahlil-lengkap",
+                title: "Tahlil & Kekuasaan Allah",
+                subtitle: "Pengesaan Allah Atas Segala Kerajaan (Dibaca 10x)",
+                arabic: "لاَ إِلَهَ إِلَّا اللهُ وَحْدَهُ لَا شَرِيكَ لَهُ لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+                count: 10,
+                kubroOnly: false
+            },
+            {
+                id: "kafaratul-majlis",
+                title: "Doa Kafaratul Majlis",
+                subtitle: "Penyuci Dosa Majelis (Dibaca 3x)",
+                arabic: "سُبْحَانَكَ اللَّهُمَّ وَبِحَمْدِكَ أَشْهَدُ أَنْ لَّا إِلَهَ إِلَّا أَنْتَ أَسْتَغْفِرُكَ وَأَتُوْبُ إِلَيْكَ",
+                count: 3,
+                kubroOnly: false
+            },
+            {
+                id: "sholawat-ummi-sahabat",
+                title: "Sholawat Ummi & Ridha Sahabat",
+                subtitle: "Penghormatan Kepada Para Sahabat & Tabi'in (Dibaca 1x)",
+                arabic: "اللَّهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ عَبْدِكَ وَرَسُوْلِكَ النَّبِيِّ الْأُمِّي وَعَلَى آلِهِ وَصَحْبِهِ وَسَلَّمْ تَسْلِيمًا عَدَدَ مَا أَحَاطَ بِهِ عِلْمُكَ وَخَطَّ بِهِ قَلَمُكَ وَأَحْصَاهُ كِتَابُكَ وَارْضَ اللَّهُمَّ عَنْ سَادَاتِنَا أَبِي بَكْرٍ وَعُمَرَ وَعُثْمَانَ وَعَلِيٍّ وَعَنِ الصَّحَابَةِ أَجْمَعِينَ وَعَنِ التَّابِعِينَ وَتَابِعِيْهِمْ بِإِحْسَانٍ إِلَى يَوْمِ الدِّينِ",
+                count: 1,
+                kubroOnly: false
+            },
+            {
+                id: "penutup-pujian-rabb",
+                title: "Pujian Penutup Keagungan Rabb",
+                subtitle: "Pujian Kepada Allah Rabb Semesta Alam (Dibaca 1x)",
+                arabic: "سُبْحَانَ رَبِّكَ رَبِّ الْعِزَّةِ عَمَّا يَصِفُوْنَ وَسَلَامٌ عَلَى المُرْسَلِينَ وَالْحَمْدُ لِلَّهِ رَبِّ العَالَمِينَ",
+                count: 1,
+                kubroOnly: false
+            },
+            {
+                id: "rabitah-1",
+                title: "Surah Ali 'Imran: 26-27 (Doa Rabitah 1)",
+                subtitle: "Kekuasaan Allah Mengatur Kerajaan & Waktu (Dibaca 1x)",
+                arabic: "قُلِ اللَّهُمَّ مَالِكَ الْمُلْكِ تُؤْتِي الْمُلْكَ مَن تَشَاءُ وَتَنزِعُ الْمُلْكَ مِمَّن تَشَاءُ وَتُعِزُّ مَن تَشَاءُ وَتُذِلُّ مَن تَشَاءُ بِيَدِكَ الْخَيْرُ إِنَّكَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ (٢٦) تُولِجُ اللَّيْلَ فِي النَّهَارِ وَتُولِجُ النَّهَارَ فِي النَّهَارِ وَتُخْرِجُ الْحَيَّ مِنَ الْمَيِّتِ وَتُخْرِجُ الْمَيِّتَ مِنَ الْحَيِّ وَتَرْزُقُ مَن تَشَاءُ بِغَيْرِ حِسَابٍ (٢٧)",
+                count: 1,
+                kubroOnly: true
+            },
+            {
+                id: "rabitah-2",
+                title: "Doa Permohonan Pengampunan (Doa Rabitah 2)",
+                subtitle: "Menyambut Pagi/Petang (Dibaca 1x)",
+                dynamicType: "rabitah2",
+                arabicPagi: "اللَّهُمَّ إِنَّ هَذَا إِقْبَالُ نَهَارِكَ وَإِدْبَارُ لَيْلِكَ وَأَصْوَاتُ دُعَاتِكَ فَاغْفِرْ لِي",
+                arabicPetang: "اللَّهُمَّ إِنَّ هَذَا إِقْبَالُ لَيْلِكَ وَإِدْبَارُ نَهَارِكَ وَأَصْوَاتُ دُعَاتِكَ فَاغْفِرْ لِي",
+                count: 1,
+                kubroOnly: false
+            },
+            {
+                id: "rabitah-3",
+                title: "Doa Pengikat Hati & Ukhuwah (Doa Rabitah 3)",
+                subtitle: "Ketetapan Hati Dalam Naungan Islam (Dibaca 1x)",
+                dynamicType: "rabitah3",
+                arabicPagi: "اَللّهُمَّ إِنَّكَ تَعْلَمُ أَنَّ هَذِهِ الْقُلُوْبَ قَدِ اجْتَمَعَتْ عَلَى مَحَبَّتِكَ وَالْتَقَتْ عَلَى طَاعَتِكَ وَتَوَحَّدَتْ عَلَى دَعْوَتِكَ وَتَوَاهَدَتْ عَلَى نُصْرَةِ شَرِيعَتِكَ فَوَثِّقِ اللَّهُمَّ رَابِطَتَهَا وَأَدِمْ وُدَّهَا وَاهْدِهَا سُبُلَهَا وَامْلَأَهَا بِنُوْرِكَ الَّذِي لَا يَخْبُوْ وَاشْرَحْ صُدُوْرَهَا بِفَيْضِ الْإِيْمَانِ بِكَ وَجَمِيْلِ التَّوَكُلِ عَلَيْكَ وَأَحْيِهَا بِمَعْرِفَتِكَ وَأَمِتْهَا عَلَى الشَّهَادَةِ فِي سَبِيْلِكَ إِنَّكَ نِعْمَ الْمَوْلَى وَنِعْمَ النَّصِيرِ اللَّهُمَّ أَمِينَ. وَصَلِّ اللَّهُمَّ عَلَى سَيِّدَنَا مُحَمَّدٍ وَعَلَى آلِهِ وَصَحْبِهِ وَسَلَّمَ.",
+                arabicPetang: "اَللّهُمَّ إِنَّكَ تَعْلَمُ أَنَّ هَذِهِ الْقُلُوْبَ قَدِ اجْتَمَعَتْ عَلَى مَحَبَّتِكَ وَالْتَقَتْ عَلَى طَاعَتِكَ وَتَوَحَّدَتْ عَلَى دَعْوَتِكَ وَتَعَاهَدَتْ عَلَى نُصْرَةِ شَرِيعَتِكَ فَوَثِّقِ اللَّهُمَّ رَابِطَتَهَا وَأَدِمْ وُدَّهَا وَاهْدِهَا سُبُلَهَا وَامْلَأَهَا بِنُوْرِكَ الَّذِي لَا يَخْبُوْ وَاشْرَحْ صُدُوْرَهَا بِفَيْضِ الْإِيْمَانِ بِكَ وَجَمِيْلِ التَّوَكُلِ عَلَيْكَ وَأَحْيِهَا بِمَعْرِفَتِكَ وَأَمِتْهَا عَلَى الشَّهَادَةِ فِي سَبِيْلِكَ إِنَّكَ نِعْمَ الْمَوْلَى وَنِعْمَ النَّصِيرِ اللَّهُمَّ أَمِينَ. وَصَلِّ اللَّهُمَّ عَلَى سَيِّدَنَا مُحَمَّدٍ وَعَلَى آلِهِ وَصَحْبِهِ وَسَلَّمَ.",
+                count: 1,
+                kubroOnly: false
+            }
+        ];
+
+        // State Management
+        let currentMode = 'pagi'; 
+        let currentType = 'kubro'; // 'kubro' | 'sughro'
+        let isAutoTime = true;
+        const fontClasses = ['arabic-size-sm', 'arabic-size-md', 'arabic-size-lg', 'arabic-size-xl'];
+        const fontLabels = ['Kecil', 'Sedang', 'Besar', 'Sangat Besar'];
+        let fontIndex = 1; // Default Medium size
+        let counterState = {};
+
+        // Selecting Type from Modal First Time
+        function selectType(type) {
+            currentType = type;
+            const modal = document.getElementById('type-selection-modal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            updateTypeUI();
+            renderCards();
+        }
+
+        function setType(type) {
+            currentType = type;
+            updateTypeUI();
+            renderCards();
+        }
+
+        function updateTypeUI() {
+            const modalBtnKubro = document.getElementById('modal-btn-kubro');
+            const modalBtnSughro = document.getElementById('modal-btn-sughro');
+            const drawerSubtitle = document.getElementById('drawer-subtitle');
+            const compactTitleBadge = document.getElementById('compact-title-badge');
+            const footerTitle = document.getElementById('footer-title');
+
+            const typeLabel = currentType === 'kubro' ? 'Kubro' : 'Sughro';
+
+            if (currentType === 'kubro') {
+                modalBtnKubro.className = "py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition bg-emerald-700 text-white shadow-sm";
+                modalBtnSughro.className = "py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700";
+            } else {
+                modalBtnSughro.className = "py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition bg-amber-600 text-white shadow-sm";
+                modalBtnKubro.className = "py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700";
+            }
+
+            drawerSubtitle.innerText = `Al-Ma'thurat ${typeLabel} Lengkap`;
+            compactTitleBadge.innerText = `Al-Ma'thurat ${typeLabel}`;
+            footerTitle.innerText = `Al-Ma'thurat ${typeLabel} - Dzikir Pagi & Petang`;
+
+            updateSubModeBadge();
+        }
+
+        function updateSubModeBadge() {
+            const subBadge = document.getElementById('sub-mode-badge');
+            const typeLabel = currentType === 'kubro' ? 'Kubro' : 'Sughro';
+            const modeLabel = currentMode === 'pagi' ? 'Pagi' : 'Petang';
+            const autoLabel = isAutoTime ? ' (Otomatis)' : '';
+
+            subBadge.innerText = `${typeLabel} • Mode ${modeLabel}${autoLabel}`;
+        }
+
+        // Auto Time Mode Detector
+        function initAutoTimeMode() {
+            const hours = new Date().getHours();
+            if (hours < 12) {
+                setMode('pagi', true);
+            } else {
+                setMode('petang', true);
+            }
+        }
+
+        function setMode(mode, isAuto = false) {
+            currentMode = mode;
+            isAutoTime = isAuto;
+            const btnPagi = document.getElementById('btn-pagi');
+            const btnPetang = document.getElementById('btn-petang');
+            const modalBtnPagi = document.getElementById('modal-btn-pagi');
+            const modalBtnPetang = document.getElementById('modal-btn-petang');
+            const compactBadge = document.getElementById('compact-status-badge');
+
+            if (mode === 'pagi') {
+                btnPagi.className = "px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1 bg-emerald-700 text-white shadow-sm";
+                btnPetang.className = "px-2.5 py-1 text-xs font-medium rounded-lg transition-all flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:text-emerald-700";
+                
+                modalBtnPagi.className = "py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition bg-emerald-700 text-white shadow-sm";
+                modalBtnPetang.className = "py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700";
+
+                compactBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500 text-slate-900 flex items-center gap-1.5 shadow-sm";
+                compactBadge.innerHTML = `<i class="fa-solid fa-sun"></i> Mode Pagi`;
+            } else {
+                btnPetang.className = "px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1 bg-indigo-700 text-white shadow-sm";
+                btnPagi.className = "px-2.5 py-1 text-xs font-medium rounded-lg transition-all flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:text-emerald-700";
+                
+                modalBtnPetang.className = "py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition bg-indigo-700 text-white shadow-sm";
+                modalBtnPagi.className = "py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700";
+
+                compactBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-600 text-white flex items-center gap-1.5 shadow-sm";
+                compactBadge.innerHTML = `<i class="fa-solid fa-moon"></i> Mode Petang`;
+            }
+
+            updateSubModeBadge();
+            renderCards();
+        }
+
+        // Font Resize Logic
+        function changeFontSize(delta) {
+            const newIndex = fontIndex + delta;
+            if (newIndex >= 0 && newIndex < fontClasses.length) {
+                fontIndex = newIndex;
+                document.getElementById('font-size-label').innerText = fontLabels[fontIndex];
+                dzikirData.forEach(item => {
+                    const el = document.getElementById(`arabic-${item.id}`);
+                    if (el) {
+                        el.className = `font-arabic ${fontClasses[fontIndex]} text-slate-900 dark:text-emerald-50 whitespace-pre-line text-right`;
+                    }
+                });
+            }
+        }
+
+        // Dark Mode Toggle
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            const themeIcon = document.getElementById('theme-icon');
+            const modalThemeIcon = document.getElementById('modal-theme-icon');
+            
+            if (themeIcon) themeIcon.className = isDark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+            if (modalThemeIcon) modalThemeIcon.className = isDark ? "fa-solid fa-sun text-amber-400" : "fa-solid fa-moon text-indigo-500";
+        }
+
+        // Get Filtered Data
+        function getFilteredData() {
+            if (currentType === 'sughro') {
+                return dzikirData.filter(item => !item.kubroOnly);
+            }
+            return dzikirData;
+        }
+
+        // Counter Mechanics
+        function incrementCounter(id, target) {
+            if (!counterState[id]) counterState[id] = 0;
+            if (counterState[id] < target) {
+                counterState[id]++;
+                updateCounterUI(id, target);
+
+                const filteredData = getFilteredData();
+                const currentIndex = filteredData.findIndex(item => item.id === id);
+
+                if (counterState[id] < target) {
+                    const currentCard = document.getElementById(`card-${id}`);
+                    if (currentCard) {
+                        currentCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                } else {
+                    if (currentIndex !== -1 && currentIndex < filteredData.length - 1) {
+                        const nextId = filteredData[currentIndex + 1].id;
+                        const nextCard = document.getElementById(`card-${nextId}`);
+                        if (nextCard) {
+                            nextCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }
+                }
+            }
+        }
+
+        function resetCounter(id, target) {
+            counterState[id] = 0;
+            updateCounterUI(id, target);
+        }
+
+        function updateCounterUI(id, target) {
+            const count = counterState[id] || 0;
+            const countEl = document.getElementById(`count-val-${id}`);
+            const btnEl = document.getElementById(`count-btn-${id}`);
+            
+            if (countEl) countEl.innerText = count;
+            
+            if (btnEl) {
+                if (count >= target) {
+                    btnEl.className = "px-4 py-2 rounded-2xl bg-emerald-600 text-white font-bold text-xs flex items-center gap-2 shadow-md transition-all active:scale-95";
+                    btnEl.innerHTML = `<i class="fa-solid fa-circle-check text-sm"></i> Selesai (${count}/${target})`;
+                } else {
+                    btnEl.className = "px-4 py-2 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900 font-bold text-xs flex items-center gap-2 transition-all active:scale-95 border border-emerald-300 dark:border-emerald-800";
+                    btnEl.innerHTML = `<i class="fa-solid fa-hand-pointer text-xs"></i> Baca <span id="count-val-${id}" class="text-sm font-extrabold bg-white dark:bg-slate-800 px-2 py-0.5 rounded-lg shadow-xs">${count}</span> / ${target}x`;
+                }
+            }
+        }
+
+        // Render Cards Dynamically
+        function renderCards() {
+            const container = document.getElementById('dzikir-container');
+            container.innerHTML = '';
+
+            const activeList = getFilteredData();
+
+            activeList.forEach((item, index) => {
+                let arabicText = item.arabic;
+                if (item.dynamicType) {
+                    arabicText = currentMode === 'pagi' ? item.arabicPagi : item.arabicPetang;
+                }
+
+                if (!counterState[item.id]) counterState[item.id] = 0;
+                const count = counterState[item.id];
+                const isComplete = count >= item.count;
+
+                const cardHtml = `
+                    <div id="card-${item.id}" class="scroll-mt-16 sm:scroll-mt-20 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 sm:p-7 shadow-sm hover:shadow-md transition-all relative overflow-hidden">
+                        <div class="flex items-start justify-between gap-3 pb-4 mb-4 border-b border-slate-100 dark:border-slate-800/80">
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-2xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-extrabold text-xs flex items-center justify-center border border-emerald-200 dark:border-emerald-800 shrink-0">
+                                    ${index + 1}
+                                </span>
+                                <div>
+                                    <h3 class="font-bold text-base sm:text-lg text-slate-800 dark:text-slate-100 tracking-tight">${item.title}</h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">${item.subtitle}</p>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 whitespace-nowrap">
+                                <i class="fa-solid fa-rotate-right text-[10px] mr-1"></i>${item.count}x
+                            </span>
+                        </div>
+
+                        <div class="py-2 mb-6">
+                            <p id="arabic-${item.id}" class="font-arabic ${fontClasses[fontIndex]} text-slate-900 dark:text-emerald-50 whitespace-pre-line text-right leading-loose">
+                                ${arabicText}
+                            </p>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+                            <button onclick="resetCounter('${item.id}', ${item.count})" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs flex items-center gap-1 transition p-1" title="Reset Hitungan">
+                                <i class="fa-solid fa-rotate-left text-xs"></i> Reset
+                            </button>
+
+                            <button id="count-btn-${item.id}" onclick="incrementCounter('${item.id}', ${item.count})" 
+                                class="${isComplete ? 'px-4 py-2 rounded-2xl bg-emerald-600 text-white font-bold text-xs flex items-center gap-2 shadow-md transition-all active:scale-95' : 'px-4 py-2 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900 font-bold text-xs flex items-center gap-2 transition-all active:scale-95 border border-emerald-300 dark:border-emerald-800'}">
+                                ${isComplete ? `<i class="fa-solid fa-circle-check text-sm"></i> Selesai (${count}/${item.count})` : `<i class="fa-solid fa-hand-pointer text-xs"></i> Baca <span id="count-val-${item.id}" class="text-sm font-extrabold bg-white dark:bg-slate-800 px-2 py-0.5 rounded-lg shadow-xs">${count}</span> / ${item.count}x`}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+
+            renderDrawerItems();
+        }
+
+        // Drawer Sidebar Populator
+        function renderDrawerItems() {
+            const drawerItems = document.getElementById('drawer-items');
+            drawerItems.innerHTML = '';
+
+            const activeList = getFilteredData();
+
+            activeList.forEach((item, index) => {
+                const el = document.createElement('a');
+                el.href = `#card-${item.id}`;
+                el.onclick = closeDrawer;
+                el.className = "flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 transition";
+                el.innerHTML = `
+                    <span class="w-6 h-6 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-[11px] flex items-center justify-center shrink-0">
+                        ${index + 1}
+                    </span>
+                    <span class="truncate">${item.title}</span>
+                `;
+                drawerItems.appendChild(el);
+            });
+        }
+
+        // Drawer UI Controls
+        function openDrawer() {
+            document.getElementById('drawer').classList.remove('-translate-x-full');
+            document.getElementById('drawer-overlay').classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closeDrawer() {
+            document.getElementById('drawer').classList.add('-translate-x-full');
+            document.getElementById('drawer-overlay').classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        // Menu Modal Controls
+        const menuModal = document.getElementById('menu-modal');
+        const menuModalContent = document.getElementById('menu-modal-content');
+
+        function openMenuModal() {
+            menuModal.classList.remove('opacity-0', 'pointer-events-none');
+            menuModalContent.classList.remove('scale-95');
+            menuModalContent.classList.add('scale-100');
+        }
+
+        function closeMenuModal() {
+            menuModal.classList.add('opacity-0', 'pointer-events-none');
+            menuModalContent.classList.remove('scale-100');
+            menuModalContent.classList.add('scale-95');
+        }
+
+        menuModal.addEventListener('click', (e) => {
+            if (e.target === menuModal) closeMenuModal();
+        });
+
+        // Scroll Shrinking Header Handler
+        const mainHeader = document.getElementById('main-header');
+        const headerFullLeft = document.getElementById('header-full-left');
+        const headerFullRight = document.getElementById('header-full-right');
+        const headerCompactBar = document.getElementById('header-compact-bar');
+
+        window.addEventListener('scroll', () => {
+            const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progress-bar').style.width = scrolled + '%';
+
+            if (winScroll > 60) {
+                mainHeader.classList.add('header-compact');
+                headerFullLeft.classList.add('hidden');
+                headerFullRight.classList.add('hidden');
+                headerCompactBar.classList.remove('hidden');
+                headerCompactBar.classList.add('flex');
+            } else {
+                mainHeader.classList.remove('header-compact');
+                headerFullLeft.classList.remove('hidden');
+                headerFullRight.classList.remove('hidden');
+                headerCompactBar.classList.add('hidden');
+                headerCompactBar.classList.remove('flex');
+            }
+        });
+
+        // On Page Load Initialization
+        window.onload = function() {
+            initAutoTimeMode();
+            updateTypeUI();
+            renderCards();
+        };
+    </script>
+</body>
+</html>
