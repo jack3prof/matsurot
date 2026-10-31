@@ -848,8 +848,13 @@
                             </span>
                         </div>
 
-                        <div class="py-2 mb-6">
-                            <p id="arabic-${item.id}" class="font-arabic ${fontClasses[fontIndex]} text-slate-900 dark:text-emerald-50 whitespace-pre-line text-right">
+                        <div 
+                            class="py-2 mb-6 cursor-pointer select-none active:scale-[0.99] transition-transform"
+                            onclick="incrementCounter('${item.id}', ${item.count})"
+                            title="Klik teks untuk menghitung bacaan"
+                        >
+                            <p id="arabic-${item.id}" 
+                               class="font-arabic ${fontClasses[fontIndex]} text-slate-900 dark:text-emerald-50 whitespace-pre-line text-right">
                                 ${arabicText}
                             </p>
                         </div>
